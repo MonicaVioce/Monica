@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/dev-server.mjs",
+    "imessage-bridge": "node scripts/imessage-bridge.mjs",
     "tunnel": "lt --port 3000",
     "test:realtime": "node --env-file=.env scripts/test-realtime.mjs",
     "build": "next build",

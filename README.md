@@ -124,7 +124,22 @@ no polling needed:
 (`lib/notify.js`, hooked into the `end_call` / `request_customer_approval` tools in
 `lib/realtime-bridge.js`; failures only log — a broken text never breaks a live call.)
 
-Manual / one-off sends go through the admin endpoint:
+**Blue bubbles (iMessage):** run the bridge on any Mac signed into Messages and set
+`IMESSAGE_BRIDGE_URL=http://127.0.0.1:8787` in `.env` — `sendMessage()` then prefers
+iMessage and **falls back to SMS automatically** if the bridge is down, so a customer
+update is never lost:
+
+```bash
+npm run imessage-bridge   # first send triggers a macOS "control Messages" prompt — click Allow
+```
+
+Demo tip: messages come from the Mac's Apple ID. For the full effect, sign a dedicated
+Apple ID into Messages on the bridge Mac and set its profile (Messages → Settings →
+Share Name and Photo) to **Monica** + [her avatar](assets/monica-avatar.jpg) — see
+[docs/monica-identity.md](docs/monica-identity.md) Option 3.
+
+Manual / one-off sends go through the admin endpoint (uses the same
+iMessage-first-then-SMS routing):
 
 ```bash
 curl -X POST "https://your-public-https-domain/api/notify" \
@@ -172,7 +187,7 @@ Helper scripts (all read `A1_TEAM_KEY` from the environment):
 
 - [ ] Voice agent API research & integration
 - [x] Result notification via SMS — working, see [docs/sms-notify.md](docs/sms-notify.md)
-- [ ] iMessage (blue bubble) upgrade for notifications — Mac bridge, see [docs/monica-identity.md](docs/monica-identity.md) Option 3
+- [x] iMessage (blue bubble) upgrade for notifications — Mac bridge (`npm run imessage-bridge`), auto-fallback to SMS
 - [ ] Monica's avatar + name on the user's phone — see [docs/monica-identity.md](docs/monica-identity.md)
 - [x] Infra connecting notifications ↔ voice — call completion / approval requests auto-text `customer_phone`
 - [ ] Mock agencies (insurance / hotel) for testing
