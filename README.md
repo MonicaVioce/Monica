@@ -106,12 +106,32 @@ attach the authorized facts to Monica using that identifier:
 curl -X PUT "https://your-public-https-domain/api/cases/<call_sid>" \
   -H "Authorization: Bearer $MONICA_ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"customer_name":"Alex","company":"Hotel A","reservation_or_case_id":"ABC123","issue":"Pests in the room","requested_resolution":"A partial refund","acceptance_limit":"Do not accept an offer without customer approval","authorized_actions":["Request a manager","Request a case number"]}'
+  -d '{"customer_name":"Alex","customer_phone":"+14045551234","company":"Hotel A","reservation_or_case_id":"ABC123","issue":"Pests in the room","requested_resolution":"A partial refund","acceptance_limit":"Do not accept an offer without customer approval","authorized_actions":["Request a manager","Request a case number"]}'
 ```
 
 Read the live outcome and approval status with `GET /api/cases/<call_sid>` using the
-same authorization header. The iMessage bridge can poll that endpoint and turn
-the case notes into customer updates.
+same authorization header.
+
+### Result texting is wired in
+
+If the case context includes **`customer_phone`** (E.164, must be
+[OTP-verified](docs/sms-notify.md) first), Monica texts that number automatically —
+no polling needed:
+
+- when the call **completes** → a summary built from the last case notes
+- when the rep makes an offer **needing approval** → "needs your OK: …"
+
+(`lib/notify.js`, hooked into the `end_call` / `request_customer_approval` tools in
+`lib/realtime-bridge.js`; failures only log — a broken text never breaks a live call.)
+
+Manual / one-off sends go through the admin endpoint:
+
+```bash
+curl -X POST "https://your-public-https-domain/api/notify" \
+  -H "Authorization: Bearer $MONICA_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"to":"+14045551234","body":"Refund approved 🎉 $200, 5-7 business days."}'
+```
 
 Point the number's voice webhook at your server, then place calls:
 
@@ -154,7 +174,7 @@ Helper scripts (all read `A1_TEAM_KEY` from the environment):
 - [x] Result notification via SMS — working, see [docs/sms-notify.md](docs/sms-notify.md)
 - [ ] iMessage (blue bubble) upgrade for notifications — Mac bridge, see [docs/monica-identity.md](docs/monica-identity.md) Option 3
 - [ ] Monica's avatar + name on the user's phone — see [docs/monica-identity.md](docs/monica-identity.md)
-- [ ] Infra connecting notifications ↔ voice
+- [x] Infra connecting notifications ↔ voice — call completion / approval requests auto-text `customer_phone`
 - [ ] Mock agencies (insurance / hotel) for testing
 - [ ] End-to-end integration + QA
 - [ ] Demo video
