@@ -8,7 +8,7 @@ Ever called an insurance company 10 times to get a refund, and got denied every 
 
 ## What Monica does
 
-- **Takes your request over iMessage** — "get my refund from X", "book me a hotel", "ask if my insurance covers this"
+- **Takes your request through VoiceOS** — complain to VoiceOS ("get my refund from X", "book me a hotel", "ask if my insurance covers this") and it routes the request to Monica
 - **Dials the company for you** — real outbound phone calls, not emails into the void
 - **Chats fluently with human agents** — handles follow-up questions, pushback, and "let me transfer you"
 - **Survives holds** — Monica waits on hold; you don't
@@ -18,22 +18,23 @@ Ever called an insurance company 10 times to get a refund, and got denied every 
 ## How it works
 
 ```
-┌──────────┐   iMessage    ┌─────────────┐   VoiceOS routing   ┌──────────────┐
-│   User   │ ────────────▶ │   Monica    │ ──────────────────▶ │ Voice Agent  │
-│          │ ◀──────────── │ orchestrator│ ◀────────────────── │  (telephony) │
-└──────────┘  call result  └─────────────┘    call outcome     └──────┬───────┘
-                                                                      │ PSTN / SIP
-                                                               ┌──────▼───────┐
-                                                               │  Customer    │
-                                                               │  service 😈  │
-                                                               └──────────────┘
+┌──────┐  complaint   ┌─────────┐   request    ┌──────────────┐  call plan   ┌──────────────┐
+│ User │ ───────────▶ │ VoiceOS │ ───────────▶ │    Monica    │ ───────────▶ │ Voice Agent  │
+│      │              └─────────┘              │ orchestrator │ ◀─────────── │ (telephony)  │
+│      │ ◀─────────────────────────────────── │              │ call outcome └──────┬───────┘
+└──────┘          result via iMessage         └──────────────┘                     │ PSTN / SIP
+                                                                             ┌──────▼───────┐
+                                                                             │  Customer    │
+                                                                             │  service 😈  │
+                                                                             └──────────────┘
 ```
 
-Three pieces:
+The flow, end to end:
 
-1. **iMessage bridge** — receives user requests, pushes status updates and final results
-2. **Voice agent** — LLM-driven conversation over a phone call (dial, talk, hold, hang up, schedule retries), routed through voiceOS
-3. **Orchestrator** — connects the two: turns a text request into a call plan, turns a call transcript into a result message
+1. **User → VoiceOS** — the user complains to VoiceOS; VoiceOS routes the request to Monica
+2. **Monica orchestrator** — turns the request into a call plan (who to call, what to claim, what evidence to cite)
+3. **Voice agent** — LLM-driven conversation over a real phone call: dials, argues the case, handles follow-up questions, survives holds, schedules retries
+4. **Result → iMessage** — the call outcome flows back through Monica, and the user gets status updates and the final verdict over iMessage
 
 Telephony runs on a SIP trunk / voice webhook (Telnyx-backed). Numbers must be OTP-verified before Monica can call or text them — no cold outreach, consent first.
 
@@ -68,10 +69,8 @@ curl -X POST https://hack.a1mobile.com/api/calls \
 
 ## Demo
 
-Everything happens in an iMessage thread:
-
-1. Text Monica: *"my insurance denied my refund again, fight them"*
-2. Monica calls the (mock) insurance company, argues the case, handles follow-ups
+1. Complain to VoiceOS: *"my insurance denied my refund again, fight them"* — it routes the request to Monica
+2. Monica calls the (mock) insurance company, argues the case, handles follow-ups and holds
 3. You get the play-by-play and the final verdict back in iMessage
 
 ## Roadmap
