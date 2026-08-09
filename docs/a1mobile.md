@@ -2,54 +2,54 @@ Monica
 Save your team key — it's your API credential (and your MCP team_key).
 
 Team key
-team-f91e244317ab66ff
+<YOUR_TEAM_KEY>
 Phone number
-+13463016959
+<YOUR_PHONE_NUMBER>
 SIP username
-hackteam0006a920
+<YOUR_SIP_USERNAME>
 SIP password
-4e4f377d3f15f3acc00f4108
+<YOUR_SIP_PASSWORD>
 ← create another
 
 📚 Guides — numbers · texting · voice/TeXML · MCP
 
 1. Claim your number
-curl -X POST https://hack.a1mobile.com/api/numbers/claim -H "X-Team-Key: team-f91e244317ab66ff"
+curl -X POST https://hack.a1mobile.com/api/numbers/claim -H "X-Team-Key: <YOUR_TEAM_KEY>"
 # -> {"phone_number":"+1...","sip_username":"...","sip_password":"..."}  (idempotent)
 Wire it two ways:
 
 Webhook (recommended) — point the number's voice webhook at your server; we stream the call to you (Pipecat / any server):
 curl -X POST https://hack.a1mobile.com/api/numbers/point \
-  -H "X-Team-Key: team-f91e244317ab66ff" -H "Content-Type: application/json" \
+  -H "X-Team-Key: <YOUR_TEAM_KEY>" -H "Content-Type: application/json" \
   -d '{"webhook_url":"https://YOUR-SERVER/voice"}'
 SIP — register sip_username / sip_password at host sip.telnyx.com as a trunk (Vapi BYO SIP, LiveKit inbound trunk).
 A number rings your SIP creds on claim and flips to webhook mode when you /point it. Check wiring, or revert to SIP:
 
-curl https://hack.a1mobile.com/api/numbers/me -H "X-Team-Key: team-f91e244317ab66ff"
-curl -X POST https://hack.a1mobile.com/api/numbers/unpoint -H "X-Team-Key: team-f91e244317ab66ff"
+curl https://hack.a1mobile.com/api/numbers/me -H "X-Team-Key: <YOUR_TEAM_KEY>"
+curl -X POST https://hack.a1mobile.com/api/numbers/unpoint -H "X-Team-Key: <YOUR_TEAM_KEY>"
 Outbound calls (after you /point) — we run your pointed webhook on answer:
 
 curl -X POST https://hack.a1mobile.com/api/calls \
-  -H "X-Team-Key: team-f91e244317ab66ff" -H "Content-Type: application/json" -d '{"to":"+1NUMBER"}'
+  -H "X-Team-Key: <YOUR_TEAM_KEY>" -H "Content-Type: application/json" -d '{"to":"+1NUMBER"}'
 2. Verify a number, then call / text it
 # OTP to the number you want to reach
 curl -X POST https://hack.a1mobile.com/api/verified-numbers \
-  -H "X-Team-Key: team-f91e244317ab66ff" -H "Content-Type: application/json" -d '{"phone":"+1NUMBER"}'
+  -H "X-Team-Key: <YOUR_TEAM_KEY>" -H "Content-Type: application/json" -d '{"phone":"+1NUMBER"}'
 # confirm with the code it receives
 curl -X POST https://hack.a1mobile.com/api/verified-numbers/confirm \
-  -H "X-Team-Key: team-f91e244317ab66ff" -H "Content-Type: application/json" -d '{"phone":"+1NUMBER","code":"123456"}'
+  -H "X-Team-Key: <YOUR_TEAM_KEY>" -H "Content-Type: application/json" -d '{"phone":"+1NUMBER","code":"123456"}'
 # then text it (add media_urls for MMS)
 curl -X POST https://hack.a1mobile.com/api/sms \
-  -H "X-Team-Key: team-f91e244317ab66ff" -H "Content-Type: application/json" \
+  -H "X-Team-Key: <YOUR_TEAM_KEY>" -H "Content-Type: application/json" \
   -d '{"to":"+1NUMBER","body":"hello from my agent"}'
 You may only call/text numbers you've OTP-verified (consent) — no cold outreach.
 
 Receive texts — register a webhook, or poll:
 
 curl -X POST https://hack.a1mobile.com/api/sms/webhook \
-  -H "X-Team-Key: team-f91e244317ab66ff" -H "Content-Type: application/json" \
+  -H "X-Team-Key: <YOUR_TEAM_KEY>" -H "Content-Type: application/json" \
   -d '{"sms_webhook_url":"https://YOUR-SERVER/sms"}'
-curl "https://hack.a1mobile.com/api/sms/inbound?since_id=0" -H "X-Team-Key: team-f91e244317ab66ff"
+curl "https://hack.a1mobile.com/api/sms/inbound?since_id=0" -H "X-Team-Key: <YOUR_TEAM_KEY>"
 Relays are signed: header X-A1-Signature = HMAC-SHA256(raw body, your team key).
 
 3. MCP (for agents)
