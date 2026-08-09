@@ -1,0 +1,20 @@
+{
+  "name": "monica",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "tunnel": "cloudflared tunnel --url http://localhost:3000",
+    "build": "next build",
+    "start": "next start",
+    "check": "next build"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.35.3",
+    "@vercel/functions": "^3.1.2",
+    "next": "^16.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "ws": "^8.18.3"
+  }
+}

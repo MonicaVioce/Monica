@@ -40,6 +40,9 @@ Telephony runs on a SIP trunk / voice webhook (Telnyx-backed). Numbers must be O
 
 ## Setup
 
+For a complete teammate setup, tunneling, and consented test-call walkthrough,
+see [Local development guide](docs/LOCAL_DEVELOPMENT.md).
+
 Credentials live in environment variables — **never commit them**:
 
 ```bash
@@ -53,13 +56,70 @@ SIP_USERNAME=xxxxxxxx                # SIP trunk creds (sip.telnyx.com)
 SIP_PASSWORD=xxxxxxxx
 ```
 
+For the OpenAI-powered voice bridge, also set:
+
+```env
+OPENAI_API_KEY=...
+PUBLIC_BASE_URL=https://your-public-https-domain
+MONICA_CASE_CONTEXT={"customer_name":"...","company":"...","reservation_or_case_id":"...","issue":"...","requested_resolution":"...","acceptance_limit":"...","authorized_actions":[]}
+MONICA_ADMIN_TOKEN=replace-with-a-long-random-secret
+```
+
+### Fast local development with Cloudflare Tunnel
+
+For interactive voice-agent development, run the service locally and expose it
+with a temporary Cloudflare HTTPS/WSS URL. `npm run dev` includes a local
+WebSocket server for `/api/ws`; plain `next dev` does not. This does not deploy
+Monica or send your OpenAI key to Cloudflare.
+
+In two terminals:
+
+```bash
+npm install
+npm run dev
+```
+
+```bash
+npm run tunnel
+```
+
+`cloudflared` will print a `https://…trycloudflare.com` URL. Put that exact URL
+in `PUBLIC_BASE_URL` in your local `.env`, restart `npm run dev`, then point
+A1 Mobile to `https://…trycloudflare.com/api/voice`. Keep both processes open
+for the full test call. The temporary URL changes each time the tunnel starts.
+
+The bridge converts A1's bidirectional PCMU media stream into an OpenAI
+Realtime session and streams the agent's PCMU audio back to the call.
+
+The agent identifies itself as AI and acts only within `MONICA_CASE_CONTEXT`.
+It records case notes and requests customer approval for settlement-like terms.
+The A1 participant API does not document a way to dynamically send DTMF into a
+third-party IVR, so digit-only menus need additional provider call-control
+access; speech-enabled menus and human representatives are supported.
+
+### Attach a case to an outbound call
+
+The A1 `/api/calls` response contains a `call_sid`. Before that call is answered,
+attach the authorized facts to Monica using that identifier:
+
+```bash
+curl -X PUT "https://your-public-https-domain/api/cases/<call_sid>" \
+  -H "Authorization: Bearer $MONICA_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"customer_name":"Alex","company":"Hotel A","reservation_or_case_id":"ABC123","issue":"Pests in the room","requested_resolution":"A partial refund","acceptance_limit":"Do not accept an offer without customer approval","authorized_actions":["Request a manager","Request a case number"]}'
+```
+
+Read the live outcome and approval status with `GET /api/cases/<call_sid>` using the
+same authorization header. The iMessage bridge can poll that endpoint and turn
+the case notes into customer updates.
+
 Point the number's voice webhook at your server, then place calls:
 
 ```bash
 # wire the number to your voice server
 curl -X POST https://hack.a1mobile.com/api/numbers/point \
   -H "X-Team-Key: $A1_TEAM_KEY" -H "Content-Type: application/json" \
-  -d '{"webhook_url":"https://YOUR-SERVER/voice"}'
+  -d '{"webhook_url":"https://YOUR-SERVER/api/voice"}'
 
 # outbound call — your webhook drives the conversation on answer
 curl -X POST https://hack.a1mobile.com/api/calls \

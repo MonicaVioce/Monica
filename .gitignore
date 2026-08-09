@@ -2,5 +2,7 @@
 .env.*
 !.env.example
 node_modules/
+.next/
 .DS_Store
 assets/Monica.vcf
+npm-debug.log*
