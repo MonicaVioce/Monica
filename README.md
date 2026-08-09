@@ -56,21 +56,32 @@ SIP_USERNAME=xxxxxxxx                # SIP trunk creds (sip.telnyx.com)
 SIP_PASSWORD=xxxxxxxx
 ```
 
-For the OpenAI-powered voice bridge, also set:
+For the OpenAI-powered SIP voice agent, also set:
 
 ```env
 OPENAI_API_KEY=...
+OPENAI_PROJECT_ID=proj_...
+OPENAI_WEBHOOK_SECRET=whsec_...
 PUBLIC_BASE_URL=https://your-public-https-domain
 MONICA_CASE_CONTEXT={"customer_name":"...","company":"...","reservation_or_case_id":"...","issue":"...","requested_resolution":"...","acceptance_limit":"...","authorized_actions":[]}
 MONICA_ADMIN_TOKEN=replace-with-a-long-random-secret
 ```
 
+Create an OpenAI project webhook subscribed to `realtime.call.incoming` at:
+
+```text
+https://your-public-https-domain/api/openai/realtime-webhook
+```
+
+Copy the project ID from **OpenAI Platform → Settings → Project → General**
+and the webhook signing secret from **Project → Webhooks** into `.env`.
+
 ### Fast local development with LocalTunnel
 
-For interactive voice-agent development, run the service locally and expose it
-with a temporary HTTPS/WSS URL. `npm run dev` includes a local WebSocket server
-for `/api/ws`; plain `next dev` does not. This does not deploy Monica or send
-your OpenAI key to the tunnel provider.
+For interactive voice-agent development, run the service locally and expose its
+HTTP webhook with a temporary HTTPS URL. Call audio travels directly from A1 to
+OpenAI over SIP; the tunnel carries only signed OpenAI webhook events and A1's
+TeXML request. This does not send your OpenAI key to the tunnel provider.
 
 In two terminals:
 
@@ -88,8 +99,11 @@ in `PUBLIC_BASE_URL` in your local `.env`, restart `npm run dev`, then point
 A1 Mobile to `https://…loca.lt/api/voice`. Keep both processes open
 for the full test call. The temporary URL changes each time the tunnel starts.
 
-The bridge converts A1's bidirectional PCMU media stream into an OpenAI
-Realtime session and streams the agent's PCMU audio back to the call.
+A1 runs `/api/voice` when the outbound call is answered. That route returns
+`<Dial><Sip>` targeting the OpenAI project's Realtime SIP endpoint. OpenAI then
+POSTs a signed incoming-call event to this server, which accepts the call,
+configures Monica, and opens a monitor connection for tools and the first
+spoken greeting.
 
 The agent identifies itself as AI and acts only within `MONICA_CASE_CONTEXT`.
 It records case notes and requests customer approval for settlement-like terms.

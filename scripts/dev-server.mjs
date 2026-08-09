@@ -15,7 +15,12 @@ const server = http.createServer((request, response) => handle(request, response
 
 server.on('upgrade', (request, socket, head) => {
   const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
-  console.log('WebSocket upgrade request:', url.pathname);
+  console.log('WebSocket upgrade request:', {
+    path: url.pathname,
+    protocol: request.headers['sec-websocket-protocol'] || null,
+    extensions: request.headers['sec-websocket-extensions'] || null,
+    userAgent: request.headers['user-agent'] || null,
+  });
   if (url.pathname !== '/api/ws') {
     socket.destroy();
     return;
