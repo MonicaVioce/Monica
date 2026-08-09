@@ -15,6 +15,7 @@ const server = http.createServer((request, response) => handle(request, response
 
 server.on('upgrade', (request, socket, head) => {
   const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+  console.log('WebSocket upgrade request:', url.pathname);
   if (url.pathname !== '/api/ws') {
     socket.destroy();
     return;
@@ -31,7 +32,10 @@ server.on('upgrade', (request, socket, head) => {
     return;
   }
 
-  mediaServer.handleUpgrade(request, socket, head, (mediaSocket) => bridgeMedia(mediaSocket));
+  mediaServer.handleUpgrade(request, socket, head, (mediaSocket) => {
+    console.log('A1 media WebSocket accepted.');
+    bridgeMedia(mediaSocket);
+  });
 });
 
 server.listen(port, () => {
