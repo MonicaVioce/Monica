@@ -17,17 +17,17 @@ Ever called an insurance company 10 times to get a refund, and got denied every 
 
 ## How it works
 
+```mermaid
+flowchart LR
+    U["User"] -- "complaint" --> V["VoiceOS"]
+    V -- "request" --> M["Monica orchestrator"]
+    M -- "call plan" --> A["Voice agent<br/>(telephony)"]
+    A -- "PSTN / SIP" --> C["Customer service 😈"]
+    A -. "call outcome" .-> M
+    M -. "result via iMessage" .-> U
 ```
-┌──────┐  complaint   ┌─────────┐   request    ┌──────────────┐  call plan   ┌──────────────┐
-│ User │ ───────────▶ │ VoiceOS │ ───────────▶ │    Monica    │ ───────────▶ │ Voice Agent  │
-│      │              └─────────┘              │ orchestrator │ ◀─────────── │ (telephony)  │
-│      │ ◀─────────────────────────────────── │              │ call outcome └──────┬───────┘
-└──────┘          result via iMessage         └──────────────┘                     │ PSTN / SIP
-                                                                             ┌──────▼───────┐
-                                                                             │  Customer    │
-                                                                             │  service 😈  │
-                                                                             └──────────────┘
-```
+
+*Solid arrows: request path. Dashed arrows: results flowing back.*
 
 The flow, end to end:
 
