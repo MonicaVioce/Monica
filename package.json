@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/dev-server.mjs",
-    "tunnel": "cloudflared tunnel --url http://localhost:3000",
+    "tunnel": "localtunnel --port 3000",
     "build": "next build",
     "start": "next start",
     "check": "next build"
@@ -16,5 +16,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "localtunnel": "^2.0.2"
   }
 }

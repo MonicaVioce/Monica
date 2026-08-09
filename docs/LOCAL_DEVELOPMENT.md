@@ -1,24 +1,17 @@
 # Reproduce Monica locally
 
 This guide runs Monica on a developer laptop, exposes it temporarily through
-Cloudflare Tunnel, points an A1 Mobile number to the local voice webhook, and
+LocalTunnel, points an A1 Mobile number to the local voice webhook, and
 places a consented test call.
 
 ## What you need
 
 - Node.js 22 or later and npm
-- A Cloudflare Tunnel client (`cloudflared`)
 - An OpenAI API key with Realtime access
 - An A1 Mobile team key and a claimed team number
 - A phone number you own or a teammate's number for which they have completed
   A1's OTP verification. Do not place calls to hotels or other third parties
   during development unless they have explicitly consented.
-
-On macOS, install the tunnel client once:
-
-```bash
-brew install cloudflared
-```
 
 ## 1. Clone and configure
 
@@ -87,30 +80,30 @@ In terminal two, keep this process running for the whole call:
 npm run tunnel
 ```
 
-Copy the URL printed by Cloudflare, for example:
+Copy the URL printed by LocalTunnel, for example:
 
 ```text
-https://example-name.trycloudflare.com
+https://example-name.loca.lt
 ```
 
 Set `PUBLIC_BASE_URL` in `.env` to that URL, then restart terminal one:
 
 ```env
-PUBLIC_BASE_URL=https://example-name.trycloudflare.com
+PUBLIC_BASE_URL=https://example-name.loca.lt
 ```
 
-Quick Tunnel URLs change whenever you restart `npm run tunnel`. Repeat this
-step whenever that happens. This tunnel is for development—not production.
+Tunnel URLs can change whenever you restart `npm run tunnel`. Repeat this step
+whenever that happens. This tunnel is for development—not production.
 
 Verify the public endpoints before connecting A1:
 
 ```bash
-curl --fail https://example-name.trycloudflare.com/api/health
-curl --fail --request POST https://example-name.trycloudflare.com/api/voice \
+curl --fail https://example-name.loca.lt/api/health
+curl --fail --request POST https://example-name.loca.lt/api/voice \
   --data 'CallSid=local-check'
 ```
 
-The second response is XML containing a `wss://example-name.trycloudflare.com/api/ws`
+The second response is XML containing a `wss://example-name.loca.lt/api/ws`
 media URL.
 
 ## 4. Point A1 Mobile at your local bridge
@@ -122,7 +115,7 @@ are handled; it does not place a call.
 curl --request POST https://hack.a1mobile.com/api/numbers/point \
   --header "X-Team-Key: $A1_TEAM_KEY" \
   --header 'Content-Type: application/json' \
-  --data '{"webhook_url":"https://example-name.trycloudflare.com/api/voice"}'
+  --data '{"webhook_url":"https://example-name.loca.lt/api/voice"}'
 ```
 
 Check that the number is now in webhook mode:
@@ -169,7 +162,7 @@ whose A1 response includes a `call_sid`, you can also save structured case facts
 to the local case API before the call is answered:
 
 ```bash
-curl --request PUT "https://example-name.trycloudflare.com/api/cases/CALL_SID" \
+curl --request PUT "https://example-name.loca.lt/api/cases/CALL_SID" \
   --header "Authorization: Bearer $MONICA_ADMIN_TOKEN" \
   --header 'Content-Type: application/json' \
   --data '{"customer_name":"Demo Customer","company":"Demo Hotel","reservation_or_case_id":"TEST-123","issue":"A test refund request","requested_resolution":"A partial refund","acceptance_limit":"Do not accept an offer without customer approval","authorized_actions":["Request a case number"]}'
@@ -178,7 +171,7 @@ curl --request PUT "https://example-name.trycloudflare.com/api/cases/CALL_SID" \
 Read the saved outcome and notes:
 
 ```bash
-curl "https://example-name.trycloudflare.com/api/cases/CALL_SID" \
+curl "https://example-name.loca.lt/api/cases/CALL_SID" \
   --header "Authorization: Bearer $MONICA_ADMIN_TOKEN"
 ```
 

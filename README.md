@@ -65,12 +65,12 @@ MONICA_CASE_CONTEXT={"customer_name":"...","company":"...","reservation_or_case_
 MONICA_ADMIN_TOKEN=replace-with-a-long-random-secret
 ```
 
-### Fast local development with Cloudflare Tunnel
+### Fast local development with LocalTunnel
 
 For interactive voice-agent development, run the service locally and expose it
-with a temporary Cloudflare HTTPS/WSS URL. `npm run dev` includes a local
-WebSocket server for `/api/ws`; plain `next dev` does not. This does not deploy
-Monica or send your OpenAI key to Cloudflare.
+with a temporary HTTPS/WSS URL. `npm run dev` includes a local WebSocket server
+for `/api/ws`; plain `next dev` does not. This does not deploy Monica or send
+your OpenAI key to the tunnel provider.
 
 In two terminals:
 
@@ -83,9 +83,9 @@ npm run dev
 npm run tunnel
 ```
 
-`cloudflared` will print a `https://…trycloudflare.com` URL. Put that exact URL
+LocalTunnel will print a `https://…loca.lt` URL. Put that exact URL
 in `PUBLIC_BASE_URL` in your local `.env`, restart `npm run dev`, then point
-A1 Mobile to `https://…trycloudflare.com/api/voice`. Keep both processes open
+A1 Mobile to `https://…loca.lt/api/voice`. Keep both processes open
 for the full test call. The temporary URL changes each time the tunnel starts.
 
 The bridge converts A1's bidirectional PCMU media stream into an OpenAI
