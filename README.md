@@ -73,11 +73,28 @@ curl -X POST https://hack.a1mobile.com/api/calls \
 2. Monica calls the (mock) insurance company, argues the case, handles follow-ups and holds
 3. You get the play-by-play and the final verdict back in iMessage
 
+## Docs
+
+- [docs/sms-notify.md](docs/sms-notify.md) — the result-notification leg: API walkthrough, OTP consent flow, and how the SMS chain works under the hood (**live-tested ✅**)
+- [docs/monica-identity.md](docs/monica-identity.md) — making the sender show up as **Monica** with her avatar (contact card / vCard / iMessage profile)
+- [docs/a1mobile.md](docs/a1mobile.md) — platform API reference (numbers, voice, SMS, MCP)
+
+Helper scripts (all read `A1_TEAM_KEY` from the environment):
+
+```bash
+./scripts/verify-number.sh +1XXXXXXXXXX          # one-time consent OTP for a recipient
+./scripts/verify-number.sh +1XXXXXXXXXX 123456   # confirm the code
+./scripts/notify.sh +1XXXXXXXXXX "Refund approved 🎉 $200"
+./scripts/make-vcard.sh                          # build Monica's contact card (needs assets/monica-avatar.jpg)
+```
+
 ## Roadmap
 
 - [ ] Voice agent API research & integration
-- [ ] iMessage API research & integration
-- [ ] Infra connecting iMessage ↔ voice
+- [x] Result notification via SMS — working, see [docs/sms-notify.md](docs/sms-notify.md)
+- [ ] iMessage (blue bubble) upgrade for notifications — Mac bridge, see [docs/monica-identity.md](docs/monica-identity.md) Option 3
+- [ ] Monica's avatar + name on the user's phone — see [docs/monica-identity.md](docs/monica-identity.md)
+- [ ] Infra connecting notifications ↔ voice
 - [ ] Mock agencies (insurance / hotel) for testing
 - [ ] End-to-end integration + QA
 - [ ] Demo video
