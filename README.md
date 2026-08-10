@@ -196,6 +196,7 @@ curl -X POST https://hack.a1mobile.com/api/calls \
 
 ## Docs
 
+- [docs/call-history.md](docs/call-history.md) — end-to-end integration guide for calls, live transcripts, customer follow-up, persistence, notifications, and audio-recording options
 - [docs/sms-notify.md](docs/sms-notify.md) — the result-notification leg: API walkthrough, OTP consent flow, and how the SMS chain works under the hood (**live-tested ✅**)
 - [docs/monica-identity.md](docs/monica-identity.md) — making the sender show up as **Monica** with her avatar (contact card / vCard / iMessage profile)
 - [docs/a1mobile.md](docs/a1mobile.md) — platform API reference (numbers, voice, SMS, MCP)
