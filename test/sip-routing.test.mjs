@@ -7,6 +7,7 @@ import { POST as openaiWebhook } from '../app/api/openai/realtime-webhook/route.
 import { initialSipResponseEvents, sipHeader } from '../lib/openai-sip.js';
 import { buildAgentInstructions, realtimeTools } from '../lib/realtime-bridge.js';
 import { appendTranscriptEntry, getCase, putCase } from '../lib/cases.js';
+import { OPTIONS as requestOptions, POST as submitRequest } from '../app/api/requests/route.js';
 
 test('A1 voice webhook dials the OpenAI project over TLS SIP', async () => {
   const previous = process.env.OPENAI_PROJECT_ID;
@@ -146,4 +147,38 @@ test('agent has a structured customer follow-up tool', () => {
   const tool = realtimeTools().find(({ name }) => name === 'record_follow_up');
   assert.ok(tool);
   assert.deepEqual(tool.parameters.required, ['outcome', 'customer_questions', 'next_step']);
+});
+
+test('public request API accepts a valid request without admin credentials', async () => {
+  const response = await submitRequest(new Request('https://voice.example/api/requests', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      customer_name: 'Alex',
+      company: 'Hotel A',
+      issue: 'The room was unusable.',
+      requested_resolution: 'A partial refund',
+    }),
+  }));
+  const result = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.match(result.request_id, /^req_/);
+  assert.equal(result.status, 'submitted');
+  assert.equal(response.headers.get('access-control-allow-origin'), '*');
+  assert.equal((await getCase(result.request_id)).status, 'submitted');
+});
+
+test('public request API validates JSON requests and supports CORS preflight', async () => {
+  const invalid = await submitRequest(new Request('https://voice.example/api/requests', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ customer_name: 'Alex' }),
+  }));
+  const preflight = requestOptions();
+
+  assert.equal(invalid.status, 400);
+  assert.match((await invalid.json()).error, /company, issue, and requested_resolution/);
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get('access-control-allow-methods'), 'POST, OPTIONS');
 });
