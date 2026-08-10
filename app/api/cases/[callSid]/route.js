@@ -15,7 +15,7 @@ export async function PUT(request, { params }) {
   try {
     const { callSid } = await params;
     const context = validateCaseContext(await request.json());
-    await putCase(callSid, { status: 'prepared', context, notes: [], approval: null, updated_at: new Date().toISOString() });
+    await putCase(callSid, { status: 'prepared', context, notes: [], transcript: [], follow_up: null, approval: null, updated_at: new Date().toISOString() });
     return Response.json({ call_sid: callSid, status: 'prepared' }, { status: 201 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 400 });

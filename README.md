@@ -123,8 +123,20 @@ curl -X PUT "https://your-public-https-domain/api/cases/<call_sid>" \
   -d '{"customer_name":"Alex","customer_phone":"+14045551234","company":"Hotel A","reservation_or_case_id":"ABC123","issue":"Pests in the room","requested_resolution":"A partial refund","acceptance_limit":"Do not accept an offer without customer approval","authorized_actions":["Request a manager","Request a case number"]}'
 ```
 
-Read the live outcome and approval status with `GET /api/cases/<call_sid>` using the
-same authorization header.
+Read the live outcome, approval status, and chronological `transcript` with
+`GET /api/cases/<call_sid>` using the same authorization header. Each entry has a
+`role` (`representative` or `monica`), `text`, and timestamp, so you can review how
+Monica handled the conversation while the call is still in progress.
+
+When the call ends, the case also includes `follow_up`: a customer-ready
+`outcome`, any `customer_questions`, and a `next_step`. Monica sends that
+summary in the completion notification when a customer phone is configured.
+
+The direct A1-to-OpenAI SIP route stores transcript text but does **not** retain
+an audio recording. To retain downloadable call audio, route the call through a
+telephony provider recording feature (with the appropriate caller disclosure and
+consent) or run the existing media bridge and store the inbound/outbound audio
+streams in your own object storage.
 
 ### Result texting is wired in
 
