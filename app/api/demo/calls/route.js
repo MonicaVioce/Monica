@@ -3,11 +3,19 @@ import { putCase } from '../../../../lib/cases.js';
 
 export const runtime = 'nodejs';
 
+function isDemoAuthorized(request) {
+  return process.env.NODE_ENV !== 'production' || isAdminAuthorized(request);
+}
+
 export async function POST(request) {
-  if (!isAdminAuthorized(request)) return new Response(null, { status: 401 });
+  if (!isDemoAuthorized(request)) return new Response(null, { status: 401 });
   if (!process.env.A1_TEAM_KEY) return Response.json({ error: 'A1_TEAM_KEY is not configured.' }, { status: 503 });
   try {
-    const context = validateCaseContext(await request.json());
+    const payload = await request.json();
+    const context = validateCaseContext({
+      ...payload,
+      authorized_actions: payload.authorized_actions || ['Request a manager', 'Request a case number'],
+    });
     const response = await fetch('https://hack.a1mobile.com/api/calls', { method: 'POST', headers: { 'X-Team-Key': process.env.A1_TEAM_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ to: context.customer_phone }) });
     const call = await response.json().catch(() => ({}));
     if (!response.ok || !call.call_sid) return Response.json({ error: call.detail || 'The call could not be started.' }, { status: response.status || 502 });
