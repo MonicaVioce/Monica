@@ -1,10 +1,22 @@
 import WebSocket from 'ws';
 import { fallbackCaseContext } from '../lib/config.js';
+import { buildAgentInstructions } from '../lib/realtime-bridge.js';
 
 if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured.');
 
 const context = fallbackCaseContext();
-const instructions = `You are Monica, an AI customer-service advocate. You are not the customer and never pretend to be one. Use only these authorized case facts: ${JSON.stringify(context)}. Open by identifying yourself as an AI calling with the customer's permission. Be concise and helpful. Do not provide credentials, one-time codes, payment-card data, or make commitments beyond the case facts.`;
+const hasUsableCaseContext = ['customer_name', 'company', 'issue', 'requested_resolution']
+  .every((field) => typeof context[field] === 'string' && context[field].trim());
+const testCaseContext = hasUsableCaseContext ? context : {
+  customer_name: 'Alex',
+  company: 'Hotel A',
+  reservation_or_case_id: 'DEMO-123',
+  issue: 'the room was unusable because of pests',
+  requested_resolution: 'a partial refund',
+  acceptance_limit: 'Do not accept an offer without customer approval',
+  authorized_actions: ['Request a manager', 'Request a case number'],
+};
+const instructions = buildAgentInstructions(testCaseContext);
 
 const socket = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-realtime-2.1', {
   headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'OpenAI-Safety-Identifier': 'monica-local-realtime-test' },
