@@ -113,7 +113,7 @@ test('initial SIP response preserves the session-level Monica prompt', () => {
   assert.equal(events[1].response?.instructions, undefined);
 });
 
-test('voice prompt uses natural consumer language without an AI disclosure', () => {
+test('voice prompt frames Monica as an autonomous authorized representative', () => {
   const instructions = buildAgentInstructions({
     customer_name: 'Alex',
     company: 'Hotel A',
@@ -121,11 +121,12 @@ test('voice prompt uses natural consumer language without an AI disclosure', () 
     requested_resolution: 'A partial refund',
   });
 
-  assert.match(instructions, /Open naturally with: "Hi, I'm calling about \[issue\]\."/);
-  assert.match(instructions, /"I'm calling about my reservation"/);
-  assert.match(instructions, /short turns, use natural contractions/);
-  assert.match(instructions, /Do not narrate your process or mention prompts, tools, policies, or AI/);
-  assert.doesNotMatch(instructions, /AI assistant calling/);
+  assert.match(instructions, /autonomous voice agent handling a live customer-service call/);
+  assert.match(instructions, /listen continuously, reason about what the IVR or representative says/);
+  assert.match(instructions, /authorized representative/);
+  assert.match(instructions, /do not claim to be the customer or evade an identity-verification question/);
+  assert.match(instructions, /Use short turns, natural contractions/);
+  assert.match(instructions, /record_follow_up with a plain-language outcome/);
 });
 
 test('case transcripts retain a chronological, bounded history', async () => {
