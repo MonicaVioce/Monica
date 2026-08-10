@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 
 import { POST as voiceWebhook } from '../app/api/voice/route.js';
 import { POST as openaiWebhook } from '../app/api/openai/realtime-webhook/route.js';
-import { initialSipResponseEvents, sipHeader } from '../lib/openai-sip.js';
+import { initialSipResponseEvents, sipHeader, sipSessionConfig } from '../lib/openai-sip.js';
 import { buildAgentInstructions, realtimeTools } from '../lib/realtime-bridge.js';
 import { appendTranscriptEntry, getCase, putCase } from '../lib/cases.js';
 import { OPTIONS as requestOptions, POST as submitRequest } from '../app/api/requests/route.js';
@@ -112,6 +112,20 @@ test('initial SIP response preserves the session-level Monica prompt', () => {
   assert.match(events[0].item.content[0].text, /phone call has connected/);
   assert.deepEqual(events[1], { type: 'response.create' });
   assert.equal(events[1].response?.instructions, undefined);
+});
+
+test('SIP calls use PCMU audio and do not interrupt Monica mid-response', () => {
+  const session = sipSessionConfig({
+    customer_name: 'Alex',
+    company: 'Hotel A',
+    issue: 'A leak damaged the room.',
+    requested_resolution: 'A refund',
+  });
+
+  assert.deepEqual(session.audio.input.format, { type: 'audio/pcmu' });
+  assert.deepEqual(session.audio.output.format, { type: 'audio/pcmu' });
+  assert.equal(session.audio.input.turn_detection.interrupt_response, false);
+  assert.equal(session.audio.input.turn_detection.eagerness, 'low');
 });
 
 test('voice prompt frames Monica as an autonomous authorized representative', () => {
