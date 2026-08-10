@@ -1,0 +1,36 @@
+.scenario-picker {
+  border: 0;
+  padding: 0;
+  margin: 0 0 18px;
+}
+
+.scenario-picker legend {
+  color: #514b45;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.scenario-picker > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.scenario-picker .scenario {
+  display: inline-block;
+  width: auto;
+  background: #f2e9df;
+  color: #5e3325;
+  border: 1px solid #decfc1;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+
+.scenario-picker .scenario:hover {
+  background: #ae4728;
+  color: #fffdf9;
+}
